@@ -6,18 +6,23 @@ const apiData = require('../shared/rapidApiData')
 /* API Search ES5 Sintax*/
 // Sample search /search?title=muppets
 router.get('/search', (req, res, next) => {
-  console.log(apiData.headers)
+  res.header('Access-Control-Allow-Origin', req.headers.origin)
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  )
+
   const url = `${apiData.baseApiURL}?s=${req.query.title}&page=1`
   axios
     .get(url, { headers: apiData.headers })
     .then(response => {
-      console.log(response)
       res.status(200).json(response.data)
     })
     .catch(err => next(err))
 })
 
 /* API Search ES6 Sintax*/
+
 // Sample search /search?title=muppets
 // router.get('/search', async (req, res, next) => {
 //   const url = `${apiData.baseApiURL}?s=${req.query.title}&page=1`

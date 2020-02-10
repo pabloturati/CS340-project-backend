@@ -24,6 +24,16 @@ app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'hbs')
 app.use(express.static(path.join(__dirname, 'public')))
 
+//Cors policy handling
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', process.env.ORIGIN_DOMAIN)
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  )
+  next()
+})
+
 /* App routes */
 // Index. Used to provide React app
 const index = require('./routes/index')
