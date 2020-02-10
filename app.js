@@ -27,6 +27,9 @@ app.use(express.static(path.join(__dirname, 'public')))
 /* App routes */
 // Index. Used to provide React app
 const index = require('./routes/index')
+const movieSearch = require('./routes/movieSearch')
+
+app.use('/', movieSearch)
 app.use('/', index)
 
 module.exports = app
