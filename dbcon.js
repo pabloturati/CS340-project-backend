@@ -1,10 +1,13 @@
 const mysql = require('mysql')
+
+const { DB_HOST, DB_USERNAME, DB_NAME, DB_PASSWORD } = process.env
+
 const pool = mysql.createPool({
   connectionLimit: 10,
-  host: 'classmysql.engr.oregonstate.edu',
-  user: 'cs340_turatip',
-  password: '8349',
-  database: 'cs340_turatip'
+  host: DB_HOST,
+  user: DB_USERNAME,
+  password: DB_PASSWORD,
+  database: DB_NAME
 })
 
 module.exports.pool = pool
