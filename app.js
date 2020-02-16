@@ -6,6 +6,9 @@ const express = require('express')
 const session = require('express-session')
 const path = require('path')
 
+const MySQLStore = require('express-mysql-session')(session)
+const mysql = require('./dbcon.js')
+
 const {
   ORIGIN_DOMAIN,
   SESSION_NAME,
@@ -32,6 +35,22 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(cookieParser())
 
 // Session configuration
+const sessionStore = new MySQLStore(
+  {
+    expiration: 10800000, //3h
+    createDatabaseTable: true,
+    schema: {
+      tableName: 'Sessions',
+      columnNames: {
+        session_id: 'session_id',
+        expires: 'expires',
+        data: 'data'
+      }
+    }
+  },
+  mysql.pool
+)
+
 app.use(
   session({
     cookie: {
@@ -40,7 +59,8 @@ app.use(
     },
     name: SESSION_NAME,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: false, //Verify
+    store: sessionStore,
     secret: SESSION_SECRET
   })
 )

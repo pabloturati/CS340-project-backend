@@ -1,60 +1,65 @@
 const express = require('express')
 const router = express.Router()
-
-//Temporary users
-const Users = [
-  {
-    user_id: 1,
-    email: 'john@gmail.com',
-    password: 'secret',
-    first_name: 'John',
-    last_name: 'Smith'
-  }
-]
+const queries = require('../shared/queries')
+const {
+  createUserEntry,
+  createUserTable,
+  findUserByEmail,
+  verifyCredentials
+} = queries
 
 router.post('/login', (req, res, next) => {
   const { email, password } = req.body
   if (email && password) {
-    //Find the user
-    const { user } = Users.find(
-      user => user.email === email && user.password === password
-    )
-    if (user) {
-      req.session.userId = user.user_id
-      req.body.sucess = true
-      return res.status(200).send('success')
-    }
+    // Find the user
+    findUserByEmail(email)
+      .then(result => {
+        // If found, verify credentials
+        if (result.length > 0) {
+          verifyCredentials(email, password).then(() => {
+            req.session.userId = result.insertId //Create session
+            res.status(200).send('Login successful')
+          })
+        } else {
+          res.status(401).send('Unauthorized')
+        }
+      })
+      .catch(err => next(err))
+  } else {
+    req.body.err = 'Wrong password'
+    res.send(req.body)
   }
-  req.body.err = 'Wrong password'
-  req.body.success = false
-  res.send(req.body)
 })
 
 router.post('/register', (req, res, next) => {
   const { email, password, first_name, last_name } = req.body
-  if (email && password && first_name && last_name) {
-    const exists = Users.some(user => user.email === email)
-    if (!exists) {
-      const newUser = {
-        user_id: Users.length + 1,
-        email,
-        first_name,
-        last_name,
-        password
-      }
-      Users.push(newUser)
-      req.session.userId = newUser.user_id
-      req.body.sucess = true
-      return res.status(201).send(req.body)
-    }
-    req.body.error = 'User already exists'
-    req.body.success = false
-    return res.status(409).send(req.body)
-  }
 
-  req.body.success = false
-  req.body.err = 'Invalid data'
-  res.status(400).send(req.body)
+  if (email && first_name && last_name && password) {
+    //Verify Users table exists, if not create it
+    createUserTable()
+      .then(() => {
+        //Check if user exists.
+        findUserByEmail(email)
+          .then(result => {
+            //If user exists, return bad request
+            if (result.length > 0) {
+              res.status(409).send('User exists')
+            } else {
+              //If user does not exists, create it
+              createUserEntry(email, first_name, last_name, password)
+                .then(result => {
+                  req.session.userId = result.insertId //Create session
+                  res.status(201).send(req.session)
+                })
+                .catch(err => next(err))
+            }
+          })
+          .catch(err => next(err))
+      })
+      .catch(err => next(err))
+  } else {
+    res.status(400).send('Incomplete data')
+  }
 })
 
 router.post('/logout', (req, res, next) => {
