@@ -16,7 +16,7 @@ const queries = {
       VALUES ('${email}', '${firstName}', '${lastName}', '${password}');`
     ),
   findUserByEmail: email =>
-    runQuery(`SELECT user_id FROM Users WHERE email='${email}';`),
+    runQuery(`SELECT * FROM Users WHERE email='${email}';`),
   verifyCredentials: (email, password) =>
     runQuery(
       `SELECT user_id FROM Users WHERE email='${email}' AND password='${password}';`

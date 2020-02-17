@@ -13,14 +13,24 @@ router.post('/login', (req, res, next) => {
   if (email && password) {
     // Find the user
     findUserByEmail(email)
-      .then(result => {
+      .then(userData => {
         // If found, verify credentials
-        if (result.length > 0) {
-          verifyCredentials(email, password).then(() => {
-            req.session.userId = result.insertId //Create session
-            res.status(200).send('Login successful')
-          })
+        if (userData.length > 0) {
+          verifyCredentials(email, password)
+            .then(() => {
+              const user = userData[0]
+              //Create session
+              req.session.userId = user.user_id
+              delete user.password
+              delete user.user_id
+
+              const { cookie } = req.session
+              res.status(200).send({ ...user, expires: cookie.expires })
+              // .cookie(cookie)
+            })
+            .catch(err => next(err))
         } else {
+          req.body.err = 'Wrong password'
           res.status(401).send('Unauthorized')
         }
       })
@@ -31,7 +41,7 @@ router.post('/login', (req, res, next) => {
   }
 })
 
-router.post('/register', (req, res, next) => {
+router.post('/signup', (req, res, next) => {
   const { email, password, first_name, last_name } = req.body
 
   if (email && first_name && last_name && password) {
