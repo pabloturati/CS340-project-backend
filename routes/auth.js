@@ -26,7 +26,6 @@ router.post('/login', (req, res, next) => {
 
               const { cookie } = req.session
               res.status(200).send({ ...user, expires: cookie.expires })
-              // .cookie(cookie)
             })
             .catch(err => next(err))
         } else {
