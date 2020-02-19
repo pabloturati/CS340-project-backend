@@ -5,7 +5,8 @@ const {
   createUserEntry,
   createUserTable,
   findUserByEmail,
-  verifyCredentials
+  verifyCredentials,
+  userDataById
 } = queries
 
 router.post('/login', (req, res, next) => {
@@ -52,13 +53,26 @@ router.post('/signup', (req, res, next) => {
           .then(result => {
             //If user exists, return bad request
             if (result.length > 0) {
-              res.status(409).send('User exists')
+              res.status(409).send('User already exists')
             } else {
               //If user does not exists, create it
               createUserEntry(email, first_name, last_name, password)
                 .then(result => {
-                  req.session.userId = result.insertId //Create session
-                  res.status(201).send(req.session)
+                  const userId = result.insertId
+                  req.session.userId = userId //Create session
+                  // res.status(201).send(req.session)
+                  const { cookie } = req.session
+
+                  //Fetch user data
+                  userDataById(userId)
+                    //If successful send the user information and cookie
+                    .then(user =>
+                      res
+                        .status(200)
+                        //Send user data and new session
+                        .send({ ...user[0], expires: cookie.expires })
+                    )
+                    .catch(err => next(err))
                 })
                 .catch(err => next(err))
             }

@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser')
 const express = require('express')
 const session = require('express-session')
 const path = require('path')
+var cors = require('cors')
 
 const MySQLStore = require('express-mysql-session')(session)
 const mysql = require('./dbcon.js')
@@ -69,16 +70,7 @@ app.use(
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'hbs')
 app.use(express.static(path.join(__dirname, 'public')))
-
-//Cors policy configuration
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', ORIGIN_DOMAIN)
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
-  next()
-})
+app.use(cors())
 
 /* App routes */
 // Index. Used to provide React app

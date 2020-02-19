@@ -7,8 +7,7 @@ const queries = {
     email varchar(255) NOT NULL UNIQUE, 
     first_name varchar(255) NOT NULL,
     last_name varchar(255) NOT NULL,
-    password varchar(255) NOT NULL,
-    CONSTRAINT full_name UNIQUE (first_name, last_name)
+    password varchar(255) NOT NULL
     )engine=innoDB;`),
   createUserEntry: (email, firstName, lastName, password) =>
     runQuery(
@@ -20,6 +19,10 @@ const queries = {
   verifyCredentials: (email, password) =>
     runQuery(
       `SELECT user_id FROM Users WHERE email='${email}' AND password='${password}';`
+    ),
+  userDataById: id =>
+    runQuery(
+      `SELECT user_id, email, first_name, last_name FROM Users WHERE user_id=${id};`
     )
 }
 
