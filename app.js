@@ -10,12 +10,7 @@ var cors = require('cors')
 const MySQLStore = require('express-mysql-session')(session)
 const mysql = require('./dbcon.js')
 
-const {
-  ORIGIN_DOMAIN,
-  SESSION_NAME,
-  SESSION_DURATION,
-  SESSION_SECRET
-} = process.env
+const { SESSION_NAME, SESSION_DURATION, SESSION_SECRET } = process.env
 
 //View engine config
 require('hbs')

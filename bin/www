@@ -4,6 +4,14 @@ const http = require('http')
 let app = require('../app')
 const queries = require('../shared/queries')
 
+const {
+  createUserTable,
+  createListsTable,
+  createGenresTable,
+  createListItemsTable
+} = queries.initializeDBQueries
+// console.log(createListItemsTable)
+
 // catch 404 and render a not-found.hbs template
 app.use(function (req, res) {
   res.status(404)
@@ -49,15 +57,29 @@ server.listen(app.get('port'), () => {
 
 //Init table creations
 server.on('listening', () => {
-  try {
-    Object.values(queries.initializeDBQueries).map(query => {
-      if (typeof query === 'function') {
-        query.call().catch(e => {
+  createUserTable()
+    .then(
+      createGenresTable()
+        .then(
+          createListsTable()
+            .then(
+              createListItemsTable()
+                .then(() => {
+                  console.log('All DB tables created and loaded successfully')
+                })
+                .catch(e => {
+                  console.error(e)
+                })
+            )
+            .catch(e => {
+              console.error(e)
+            })
+        )
+        .catch(e => {
           console.error(e)
         })
-      }
+    )
+    .catch(e => {
+      console.error(e)
     })
-  } catch (err) {
-    console.error(err)
-  }
 })

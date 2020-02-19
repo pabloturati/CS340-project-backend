@@ -19,7 +19,29 @@ const initializeDBQueries = {
       number_of_dislikes int NOT NULL,
       PRIMARY KEY (list_id),
       CONSTRAINT FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE SET NULL ON UPDATE CASCADE
-      )engine=InnoDB`)
+      )engine=InnoDB`),
+  createGenresTable: () =>
+    runQuery(`CREATE TABLE IF NOT EXISTS Genres(
+      genre_id int auto_increment UNIQUE NOT NULL PRIMARY KEY,
+      name varchar(255) NOT NULL
+      )engine=InnoDB`),
+  createListItemsTable: () =>
+    runQuery(`
+    CREATE TABLE IF NOT EXISTS ListItems(
+      list_item_id int auto_increment UNIQUE PRIMARY KEY,
+      list_id int NOT NULL,
+      genre_id int,
+      name varchar(255) NOT NULL,
+      rating float,
+      image_link varchar(255),
+      imbd_link varchar(255),
+      release_date date,
+      plot varchar(255),
+      runtime varchar(255),
+      FOREIGN KEY (list_id) REFERENCES Lists(list_id) ON DELETE CASCADE ON UPDATE CASCADE,
+      FOREIGN KEY (genre_id) REFERENCES Genres(genre_id) ON DELETE SET NULL ON UPDATE CASCADE
+      )engine=InnoDB
+    `)
 }
 
 const authQueries = {
