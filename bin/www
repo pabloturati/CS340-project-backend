@@ -2,6 +2,7 @@
 
 const http = require('http')
 let app = require('../app')
+const queries = require('../shared/queries')
 
 // catch 404 and render a not-found.hbs template
 app.use(function (req, res) {
@@ -44,4 +45,19 @@ server.on('error', error => {
 app.set('port', process.env.PORT)
 server.listen(app.get('port'), () => {
   console.log(`Listening on http://localhost:${process.env.PORT}`)
+})
+
+//Init table creations
+server.on('listening', () => {
+  try {
+    Object.values(queries.initializeDBQueries).map(query => {
+      if (typeof query === 'function') {
+        query.call().catch(e => {
+          console.error(e)
+        })
+      }
+    })
+  } catch (err) {
+    console.error(err)
+  }
 })

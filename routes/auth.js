@@ -1,13 +1,13 @@
 const express = require('express')
 const router = express.Router()
 const queries = require('../shared/queries')
+
 const {
   createUserEntry,
-  createUserTable,
   findUserByEmail,
   verifyCredentials,
   userDataById
-} = queries
+} = queries.authQueries
 
 router.post('/login', (req, res, next) => {
   const { email, password } = req.body
@@ -45,39 +45,34 @@ router.post('/signup', (req, res, next) => {
   const { email, password, first_name, last_name } = req.body
 
   if (email && first_name && last_name && password) {
-    //Verify Users table exists, if not create it
-    createUserTable()
-      .then(() => {
-        //Check if user exists.
-        findUserByEmail(email)
-          .then(result => {
-            //If user exists, return bad request
-            if (result.length > 0) {
-              res.status(409).send('User already exists')
-            } else {
-              //If user does not exists, create it
-              createUserEntry(email, first_name, last_name, password)
-                .then(result => {
-                  const userId = result.insertId
-                  req.session.userId = userId //Create session
-                  // res.status(201).send(req.session)
-                  const { cookie } = req.session
+    //Check if user exists.
+    findUserByEmail(email)
+      .then(result => {
+        //If user exists, return bad request
+        if (result.length > 0) {
+          res.status(409).send('User already exists')
+        } else {
+          //If user does not exists, create it
+          createUserEntry(email, first_name, last_name, password)
+            .then(result => {
+              const userId = result.insertId
+              req.session.userId = userId //Create session
+              // res.status(201).send(req.session)
+              const { cookie } = req.session
 
-                  //Fetch user data
-                  userDataById(userId)
-                    //If successful send the user information and cookie
-                    .then(user =>
-                      res
-                        .status(200)
-                        //Send user data and new session
-                        .send({ ...user[0], expires: cookie.expires })
-                    )
-                    .catch(err => next(err))
-                })
+              //Fetch user data
+              userDataById(userId)
+                //If successful send the user information and cookie
+                .then(user =>
+                  res
+                    .status(200)
+                    //Send user data and new session
+                    .send({ ...user[0], expires: cookie.expires })
+                )
                 .catch(err => next(err))
-            }
-          })
-          .catch(err => next(err))
+            })
+            .catch(err => next(err))
+        }
       })
       .catch(err => next(err))
   } else {
