@@ -41,7 +41,27 @@ const initializeDBQueries = {
       FOREIGN KEY (list_id) REFERENCES Lists(list_id) ON DELETE CASCADE ON UPDATE CASCADE,
       FOREIGN KEY (genre_id) REFERENCES Genres(genre_id) ON DELETE SET NULL ON UPDATE CASCADE
       )engine=InnoDB
-    `)
+    `),
+  createListGenresRelTable: () =>
+    runQuery(`
+    CREATE TABLE IF NOT EXISTS lists_genres(
+      list_id int,
+      genre_id int,
+      PRIMARY KEY (list_id, genre_id),
+      FOREIGN KEY (list_id) REFERENCES Lists (list_id) ON DELETE CASCADE ON UPDATE CASCADE,
+      FOREIGN KEY (genre_id) REFERENCES Genres (genre_id) ON DELETE CASCADE ON UPDATE CASCADE
+      )engine=InnoDB
+    `),
+  createListItemsGenreRelTable: () =>
+    runQuery(
+      `CREATE TABLE IF NOT EXISTS listItems_genres(
+        list_item_id int,
+        genre_id int,
+        PRIMARY KEY (list_item_id, genre_id),
+        FOREIGN KEY (list_item_id) REFERENCES ListItems (list_item_id) ON DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY (genre_id) REFERENCES Genres (genre_id) ON DELETE CASCADE ON UPDATE CASCADE
+        )engine=InnoDB`
+    )
 }
 
 const authQueries = {

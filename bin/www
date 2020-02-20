@@ -8,7 +8,9 @@ const {
   createUserTable,
   createListsTable,
   createGenresTable,
-  createListItemsTable
+  createListItemsTable,
+  createListGenresRelTable,
+  createListItemsGenreRelTable
 } = queries.initializeDBQueries
 // console.log(createListItemsTable)
 
@@ -58,27 +60,14 @@ server.listen(app.get('port'), () => {
 //Init table creations
 server.on('listening', () => {
   createUserTable()
-    .then(
-      createGenresTable()
-        .then(
-          createListsTable()
-            .then(
-              createListItemsTable()
-                .then(() => {
-                  console.log('All DB tables created and loaded successfully')
-                })
-                .catch(e => {
-                  console.error(e)
-                })
-            )
-            .catch(e => {
-              console.error(e)
-            })
-        )
-        .catch(e => {
-          console.error(e)
-        })
-    )
+    .then(createGenresTable)
+    .then(createListsTable)
+    .then(createListItemsTable)
+    .then(createListGenresRelTable)
+    .then(createListItemsGenreRelTable)
+    .then(() => {
+      console.log('All base DB tables created and loaded successfully')
+    })
     .catch(e => {
       console.error(e)
     })
