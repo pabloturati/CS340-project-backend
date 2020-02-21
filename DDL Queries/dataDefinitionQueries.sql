@@ -8,8 +8,9 @@ CREATE TABLE IF NOT EXISTS Users (
 
 CREATE TABLE IF NOT EXISTS Lists (
     list_id int auto_increment UNIQUE NOT NULL,
-    user_id int,
+    user_id int, 
     genre_id int NOT NULL,
+    name varchar(255) NOT NULL,
     date_published date NOT NULL,
     number_of_likes int NOT NULL,
     number_of_dislikes int NOT NULL,
@@ -21,7 +22,6 @@ CREATE TABLE IF NOT EXISTS Genres(
       genre_id int auto_increment UNIQUE NOT NULL PRIMARY KEY,
       name varchar(255) NOT NULL
       )engine=InnoDB;
-
 
 CREATE TABLE IF NOT EXISTS ListItems(
       list_item_id int auto_increment UNIQUE PRIMARY KEY,
@@ -37,7 +37,6 @@ CREATE TABLE IF NOT EXISTS ListItems(
       FOREIGN KEY (list_id) REFERENCES Lists(list_id) ON DELETE CASCADE ON UPDATE CASCADE,
       FOREIGN KEY (genre_id) REFERENCES Genres(genre_id) ON DELETE SET NULL ON UPDATE CASCADE
       )engine=InnoDB;
-
     
 CREATE TABLE IF NOT EXISTS lists_genres(
       list_id int,

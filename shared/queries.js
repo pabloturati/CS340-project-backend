@@ -14,6 +14,7 @@ const initializeDBQueries = {
       list_id int auto_increment UNIQUE NOT NULL,
       user_id int,
       genre_id int NOT NULL,
+      name varchar(255) NOT NULL,
       date_published date NOT NULL,
       number_of_likes int NOT NULL,
       number_of_dislikes int NOT NULL,
@@ -83,10 +84,10 @@ const authQueries = {
 }
 
 const listQueries = {
-  createListEntry: (email, firstName, lastName, password) =>
+  createListEntry: (user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes) =>
     runQuery(
-      `INSERT INTO Lists(email, first_name, last_name, password) 
-      VALUES ('${email}', '${firstName}', '${lastName}', '${password}');`
+      `INSERT INTO Lists(user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes) 
+      VALUES ('${user_id}', '${genre_id}', '${name}', '${date_published}', '${number_of_likes}', '${number_of_dislikes}');`
     ),
   findAllLists: id => //Fixme: What is the syntax if there are no parameters?
     runQuery(`SELECT * FROM Lists;`),
