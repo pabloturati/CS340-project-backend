@@ -14,6 +14,7 @@ const initializeDBQueries = {
       list_id int auto_increment UNIQUE NOT NULL,
       user_id int,
       genre_id int NOT NULL,
+      name varchar(255) NOT NULL,
       date_published date NOT NULL,
       number_of_likes int NOT NULL,
       number_of_dislikes int NOT NULL,
@@ -82,4 +83,39 @@ const authQueries = {
     )
 }
 
-module.exports = { authQueries, initializeDBQueries }
+const listQueries = {
+  createListEntry: (user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes) =>
+    runQuery(
+      `INSERT INTO Lists(user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes) 
+      VALUES ('${user_id}', '${genre_id}', '${name}', '${date_published}', '${number_of_likes}', '${number_of_dislikes}');`
+    ),
+  findAllLists: id => //Fixme: What is the syntax if there are no parameters?
+    runQuery(`SELECT * FROM Lists;`),
+  listDataById: id =>
+    runQuery(
+      `SELECT user_id, genre_id, date_published, number_of_likes, number_dislikes FROM Lists WHERE list_id=${id};`
+    )
+}
+
+
+const listItemQueries = {
+  createListItemEntry: (list_id, genre_id, name, rating, image_link, imbd_link, release_date, plot, runtime) =>
+    runQuery(
+      `INSERT INTO ListItems(list_id, genre_id, name, rating, image_link, imbd_link, release_date, plot, runtime) 
+      VALUES ('${list_id}', '${genre_id}', '${name}', '${rating}', '${image_link}', '${imbd_link}', '${release_date}', '${plot}', '${runtime}');`
+    ),
+  randomListItemData: limit_num =>
+    runQuery(
+      `SELECT * FROM ListItems ORDER BY RAND() LIMIT ${limit_num};`
+    ),
+  listItemDataByListId: id =>
+    runQuery(
+      `SELECT * FROM ListItems WHERE list_id=${id};`
+    ),
+  listItemDataByGenreId: id =>
+    runQuery(
+      `SELECT * FROM ListItems WHERE genre_id=${id};`
+    )
+}
+
+module.exports = { authQueries, initializeDBQueries, listQueries, listItemQueries }
