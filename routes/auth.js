@@ -26,7 +26,13 @@ router.post('/login', (req, res, next) => {
               delete user.user_id
 
               const { cookie } = req.session
-              res.status(200).send({ ...user, expires: cookie.expires })
+              //ES6 sintax.
+              //res.status(200).send({ ...user, expires: cookie.expires })
+
+              //ES5 sintax rollback for OSU Server.
+              res
+                .status(200)
+                .send(Object.assign({ expires: cookie.expires }, user))
             })
             .catch(err => next(err))
         } else {
@@ -64,10 +70,16 @@ router.post('/signup', (req, res, next) => {
               userDataById(userId)
                 //If successful send the user information and cookie
                 .then(user =>
+                  //ES6 sintax.
+                  // res
+                  //   .status(200)
+                  //   //Send user data and new session
+                  //   .send({ ...user[0], expires: cookie.expires })
+
+                  //ES5 sintax rollback for OSU Server.
                   res
                     .status(200)
-                    //Send user data and new session
-                    .send({ ...user[0], expires: cookie.expires })
+                    .send(Object.assign({ expires: cookie.expires }, user[0]))
                 )
                 .catch(err => next(err))
             })

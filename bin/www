@@ -12,7 +12,6 @@ const {
   createListGenresRelTable,
   createListItemsGenreRelTable
 } = queries.initializeDBQueries
-// console.log(createListItemsTable)
 
 // catch 404 and render a not-found.hbs template
 app.use(function (req, res) {

@@ -84,38 +84,52 @@ const authQueries = {
 }
 
 const listQueries = {
-  createListEntry: (user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes) =>
+  createListEntry: (
+    user_id,
+    genre_id,
+    name,
+    date_published,
+    number_of_likes,
+    number_of_dislikes
+  ) =>
     runQuery(
       `INSERT INTO Lists(user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes) 
       VALUES ('${user_id}', '${genre_id}', '${name}', '${date_published}', '${number_of_likes}', '${number_of_dislikes}');`
     ),
-  findAllLists: id => //Fixme: What is the syntax if there are no parameters?
-    runQuery(`SELECT * FROM Lists;`),
+  findAllLists: () => runQuery(`SELECT * FROM Lists;`),
   listDataById: id =>
     runQuery(
       `SELECT user_id, genre_id, date_published, number_of_likes, number_dislikes FROM Lists WHERE list_id=${id};`
     )
 }
 
-
 const listItemQueries = {
-  createListItemEntry: (list_id, genre_id, name, rating, image_link, imbd_link, release_date, plot, runtime) =>
+  createListItemEntry: (
+    list_id,
+    genre_id,
+    name,
+    rating,
+    image_link,
+    imbd_link,
+    release_date,
+    plot,
+    runtime
+  ) =>
     runQuery(
       `INSERT INTO ListItems(list_id, genre_id, name, rating, image_link, imbd_link, release_date, plot, runtime) 
       VALUES ('${list_id}', '${genre_id}', '${name}', '${rating}', '${image_link}', '${imbd_link}', '${release_date}', '${plot}', '${runtime}');`
     ),
   randomListItemData: limit_num =>
-    runQuery(
-      `SELECT * FROM ListItems ORDER BY RAND() LIMIT ${limit_num};`
-    ),
+    runQuery(`SELECT * FROM ListItems ORDER BY RAND() LIMIT ${limit_num};`),
   listItemDataByListId: id =>
-    runQuery(
-      `SELECT * FROM ListItems WHERE list_id=${id};`
-    ),
+    runQuery(`SELECT * FROM ListItems WHERE list_id=${id};`),
   listItemDataByGenreId: id =>
-    runQuery(
-      `SELECT * FROM ListItems WHERE genre_id=${id};`
-    )
+    runQuery(`SELECT * FROM ListItems WHERE genre_id=${id};`)
 }
 
-module.exports = { authQueries, initializeDBQueries, listQueries, listItemQueries }
+module.exports = {
+  authQueries,
+  initializeDBQueries,
+  listQueries,
+  listItemQueries
+}
