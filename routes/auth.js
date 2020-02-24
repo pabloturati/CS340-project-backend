@@ -63,7 +63,6 @@ router.post('/signup', (req, res, next) => {
             .then(result => {
               const userId = result.insertId
               req.session.userId = userId //Create session
-              // res.status(201).send(req.session)
               const { cookie } = req.session
 
               //Fetch user data
