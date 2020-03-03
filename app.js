@@ -73,10 +73,12 @@ const index = require('./routes/index')
 const movieSearch = require('./routes/movieSearch')
 const auth = require('./routes/auth')
 const lists = require('./routes/lists')
+const dbTests = require('./routes/dbTests')
 
+app.use('/', dbTests)
 app.use('/', movieSearch)
 app.use('/', auth)
-app.use('/', lists)
+app.use('/lists', lists)
 app.use('/', index)
 
 module.exports = app

@@ -28,7 +28,7 @@
   -- This delete creates cascade delete on Lists per the table constraint definition
   DELETE FROM Users WHERE user_id=:user_id_from_session_data;
 
--- Lists.
+-- Lists
 
   -- Create new list entry
   INSERT INTO Lists(user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes) VALUES 
@@ -44,10 +44,21 @@
   -- Find all lists, sort by likes.  To display all lists in homepage. Most likes go to the top
   SELECT * FROM Lists ORDER BY number_of_likes DESC;
 
-  -- Display all lists with all of its ListItems
-  SELECT * FROM Lists L INNER JOIN ListItems LI ON L.list_id=LI.list_id
+  -- Display all lists that belong to a specific user (by user_id)
+  SELECT L.name, L.date_published, L.number_of_likes, L.number_of_dislikes, RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) 
+    AS 'owner_name' FROM Lists AS L INNER JOIN Users AS U ON L.user_id=U.user_id;
 
-  -- Enlist all lists that belong to a user. To be used to diplay the lists owned by the private user to be displayed in the user's private section of the app.
+  -- Display all list data by list_id
+  SELECT L.name, L.date_published, L.number_of_likes, L.number_of_dislikes, RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) AS 'owner_name' 
+    FROM Lists AS L 
+    INNER JOIN Users AS U 
+    ON L.user_id=U.user_id WHERE L.list_id=:list_id_param;
+
+  -- Display all ListItems per List
+  SELECT LI.name, rating, image_link, imbd_link, release_date, plot, runtime FROM Lists AS L 
+    INNER JOIN ListItems LI ON L.list_id=LI.list_id WHERE LI.list_id=:LI.list_id
+
+  -- Return all lists that belong to a user. To be used to diplay the lists owned by the private user to be displayed in the user's private section of the app.
   SELECT * FROM Lists WHERE user_id=:user_id_from_session_data;
 
   -- Update list table data - direct fields
@@ -89,16 +100,16 @@
   
   -- Update table values
   UPDATE ListItems
-  SET(
-      name:name_from_form_input_or_API,
-      rating:rating_from_form_input_or_API_data,
-      image_link:image_link_from_form_input_or_API_data, 
-      imbd_link:imbd_link_from_form_input_or_API_data,
-      release_date:release_date_from_form_input_or_API_data,
-      plot:plot_from_input_from_form_input_or_API_data,
-      runtime:runtime_from_form_input_or_API_data
-    )
-  WHERE list_id:list_id_from_the_list_being_edited_or_created; 
+    SET(
+        name:name_from_form_input_or_API,
+        rating:rating_from_form_input_or_API_data,
+        image_link:image_link_from_form_input_or_API_data, 
+        imbd_link:imbd_link_from_form_input_or_API_data,
+        release_date:release_date_from_form_input_or_API_data,
+        plot:plot_from_input_from_form_input_or_API_data,
+        runtime:runtime_from_form_input_or_API_data
+      )
+    WHERE list_id:list_id_from_the_list_being_edited_or_created; 
 
   -- Add new genre to listItem (will have backend error handling if duplicate entry)
   INSERT INTO listItems_genres(list_item_id, genre_id) 

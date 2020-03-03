@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "nodemon": "^1.12.1",
+    "prettier-standard": "^16.1.0",
     "standard": "^14.3.1"
   }
 }

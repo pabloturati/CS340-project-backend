@@ -4,17 +4,10 @@ const http = require('http')
 let app = require('../app')
 const queries = require('../shared/queries')
 
-const {
-  createUserTable,
-  createListsTable,
-  createGenresTable,
-  createListItemsTable,
-  createListGenresRelTable,
-  createListItemsGenreRelTable
-} = queries.initializeDBQueries
+const { validateDB } = queries
 
 // catch 404 and render a not-found.hbs template
-app.use(function (req, res) {
+app.use(function(req, res) {
   res.status(404)
   res.render('not-found.hbs')
 })
@@ -58,16 +51,13 @@ server.listen(app.get('port'), () => {
 
 //Init table creations
 server.on('listening', () => {
-  createUserTable()
-    .then(createGenresTable)
-    .then(createListsTable)
-    .then(createListItemsTable)
-    .then(createListGenresRelTable)
-    .then(createListItemsGenreRelTable)
+  validateDB()
     .then(() => {
-      console.log('All base DB tables created and loaded successfully')
+      console.log('Connected to mySQL. DB integration validated correctly.')
     })
-    .catch(e => {
-      console.error(e)
+    .catch(error => {
+      console.error('DB Table validation error\n')
+      if (error && error.sqlMessage)
+        console.error('DB Table validation error\n', error.sqlMessage)
     })
 })
