@@ -22,10 +22,10 @@ router.post('/login', (req, res, next) => {
               const user = userData[0]
               //Create session
               req.session.userId = user.user_id
-              delete user.password
-              delete user.user_id
 
               const { cookie } = req.session
+              delete user.password
+
               //ES6 sintax.
               //res.status(200).send({ ...user, expires: cookie.expires })
 
@@ -101,6 +101,7 @@ router.post('/logout', (req, res, next) => {
   })
   res.clearCookie(process.env.SESSION_NAME)
   req.body.sucess = true
+  //Session destroyed
   res.status(200).send(req.body)
 })
 

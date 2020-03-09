@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS Lists (
 --
 CREATE TABLE IF NOT EXISTS Genres(
   genre_id int auto_increment UNIQUE NOT NULL PRIMARY KEY,
-  name varchar(255) NOT NULL
+  name varchar(255) NOT NULL UNIQUE
 ) engine = InnoDB;
 --
 -- Table structure for table: ListItems
@@ -117,7 +117,12 @@ INSERT INTO Genres(name)
 VALUES
   ('Sitcom'),
   ('Spy'),
-  ('Action');
+  ('Action'),
+  ('Romance'),
+  ('Comedy'),
+  ('Horror'),
+  ('Drama');
+
 -- Populate ListItems with initial entries for basic genres
 INSERT INTO ListItems(
     list_id,

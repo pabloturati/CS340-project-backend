@@ -29,37 +29,59 @@
   DELETE FROM Users WHERE user_id=:user_id_from_session_data;
 
 -- Lists
+  --createListEntr(user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes)
+    -- Create new list entry
+    INSERT INTO Lists(user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes) VALUES 
+      (
+        :user_id, 
+        :genre_id_from_form_drop_down, 
+        :name_from_form_input, 
+        :date_published_from_form_input, 
+        :number_of_likes_from_form_input, 
+        :number_of_likes_from_form_input
+      );
 
-  -- Create new list entry
-  INSERT INTO Lists(user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes) VALUES 
-    (
-      :user_id, 
-      :genre_id_from_form_drop_down, 
-      :name_from_form_input, 
-      :date_published_from_form_input, 
-      :number_of_likes_from_form_input, 
-      :number_of_likes_from_form_input
-    );
+  -- getAllLists()
+    -- Display all lists that belong to a specific user (by user_id)
+    SELECT L.list_id, L.name AS list_name, L.date_published, L.number_of_likes, L.number_of_dislikes, 
+      RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) 
+      AS 'owner_name' FROM Lists AS L 
+      INNER JOIN Users AS U ON L.user_id=U.user_id;
 
-  -- Find all lists, sort by likes.  To display all lists in homepage. Most likes go to the top
-  SELECT * FROM Lists ORDER BY number_of_likes DESC;
+  -- listItemsPerList(listId)
+    -- Display all ListItems per List  FILTER (all)
+    SELECT LI.list_item_id, LI.name, rating, image_link, imbd_link, release_date, plot, runtime FROM Lists AS L 
+    INNER JOIN ListItems LI ON L.list_id=LI.list_id 
+      WHERE LI.list_id=${listId};
 
-  -- Display all lists that belong to a specific user (by user_id)
-  SELECT L.name, L.date_published, L.number_of_likes, L.number_of_dislikes, RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) 
-    AS 'owner_name' FROM Lists AS L INNER JOIN Users AS U ON L.user_id=U.user_id;
+    -- Display all items ordered by number_of_likes (more to less)  FILTER (order by most likes on top)
+    SELECT L.list_id, L.name AS list_name, L.date_published, L.number_of_likes, L.number_of_dislikes, RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) 
+    AS 'owner_name' FROM Lists AS L 
+    INNER JOIN Users AS U ON L.user_id=U.user_id ORDER BY number_of_likes DESC;
 
-  -- Display all list data by list_id
-  SELECT L.name, L.date_published, L.number_of_likes, L.number_of_dislikes, RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) AS 'owner_name' 
-    FROM Lists AS L 
-    INNER JOIN Users AS U 
-    ON L.user_id=U.user_id WHERE L.list_id=:list_id_param;
+    -- Display all items ordered by number_of_likes () FILTER
+    SELECT L.list_id, L.name AS list_name, L.date_published, L.number_of_likes, L.number_of_dislikes, RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) 
+    AS 'owner_name' FROM Lists AS L 
+    INNER JOIN Users AS U ON L.user_id=U.user_id ORDER BY L.date_published DESC;
 
-  -- Display all ListItems per List
-  SELECT LI.name, rating, image_link, imbd_link, release_date, plot, runtime FROM Lists AS L 
-    INNER JOIN ListItems LI ON L.list_id=LI.list_id WHERE LI.list_id=:LI.list_id
 
-  -- Return all lists that belong to a user. To be used to diplay the lists owned by the private user to be displayed in the user's private section of the app.
-  SELECT * FROM Lists WHERE user_id=:user_id_from_session_data;
+  --listDetailsByListId(listId)
+    -- Display all list data by list_id
+    SELECT L.name, L.date_published, L.number_of_likes, L.number_of_dislikes,
+      RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) AS 'owner_name' FROM Lists AS L 
+      INNER JOIN Users AS U ON L.user_id=U.user_id
+      WHERE L.list_id=1;
+
+    -- Get all list items for that list
+    SELECT LI.list_item_id, LI.name, rating, image_link, imbd_link, release_date, plot, runtime 
+      FROM Lists AS L INNER JOIN ListItems LI 
+      ON L.list_id=LI.list_id WHERE LI.list_id=:list_id_param;
+
+  -- genresPerListItem(userId) - Return all lists that belong to a user. 
+    -- To be used to diplay the lists owned by the private user to be displayed in the user's private section of the app.
+    SELECT L.list_id, L.name AS list_name, L.date_published, L.number_of_likes, L.number_of_dislikes, 
+      RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) AS 'owner_name' FROM Lists AS L 
+      INNER JOIN Users AS U ON L.user_id=U.user_id WHERE U.user_id=:user_id_from_session_data;
 
   -- Update list table data - direct fields
   UPDATE Lists SET
@@ -121,11 +143,16 @@
     WHERE l.list_item_id=:list_item_id_from_change_request_form; 
 
 -- Genres.
-  -- Provides a list of Genres to populate the genre dropdown in the List and ListItem forms.
-  -- Returns genre_id and name.
-  SELECT * FROM Genres;
+  -- genresPerListItem(listItemId)
+  SELECT G.name FROM ListItems AS LI INNER JOIN listItems_genres AS LIG ON LIG.list_item_id = LI.list_item_id 
+    INNER JOIN Genres AS G ON G.genre_id=LIG.genre_id WHERE LI.list_item_id=:list_item_id;
 
-  -- Insert new values.  Handle error for attempted duplicate entries since names must be unique
+  -- allGenres() - Returns genre_id and name.
+  -- Provides a list of Genres to populate the genre dropdown in the List and ListItem forms.
+  SELECT G.name as genre_name, G.genre_id  FROM Genres as G ORDER BY G.genre_id;
+
+  -- createNewGenre() Insert new values.  
+  -- Note: Handle error for attempted duplicate entries since names must be unique
   INSERT INTO Genres(name) 
     VALUES(:name_from_input_in_form);
 
@@ -134,6 +161,6 @@
     SET name=:new_genre_name_from_form_input
     WHERE genre_id=:genre_id_from_fron_end;
 
-  -- Delete Genres
-  DELETE FROM Genres WHERE genre_id=1
+  -- deleteGenre() Delete Genres
+  DELETE FROM Genres WHERE genre_id=:genre_id_from_request_param
 

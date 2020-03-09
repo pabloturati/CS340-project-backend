@@ -1,20 +1,32 @@
 const router = require('express').Router()
 const queries = require('../shared/queries')
+const runQuery = require('../shared/runQuery')
+
 const {
   getAllLists,
   listItemsPerList,
-  listDetailsByListId
+  listDetailsByListId,
+  getUsersList
 } = queries.listQueries
 
-router.get('/all', (req, res, next) => {
+//Sort options:  'none', 'date' by publish date DESC, 'likes' by number_of_likes 'descending'
+router.get('/all?:sort', (req, res, next) => {
+  const { sort } = req.query
+  const { noOrder, byLikes, byDates } = getAllLists
+
+  let query = noOrder //For sort=none
+  if (sort === 'date') query = byDates
+  else if (sort === 'likes') query = byLikes
+
   //Get all lists
-  getAllLists()
+  runQuery(query)
     //For each list get it's content.
     .then(lists => {
       const promises = []
       lists &&
         lists.length > 0 &&
         lists.forEach(list => {
+          list.items = []
           promises.push(
             //Get each Lists' items
             listItemsPerList(list.list_id)
@@ -36,6 +48,38 @@ router.get('/all', (req, res, next) => {
     })
 })
 
+// Returns user's lists
+router.get('/user?:id', (req, res, next) => {
+  const { id } = req.query
+  getUsersList(id)
+    .then(lists => {
+      const promises = []
+      lists &&
+        lists.length > 0 &&
+        lists.forEach(list => {
+          list.items = []
+          promises.push(
+            //Get each Lists' items
+            listItemsPerList(list.list_id)
+              .then(items => {
+                list.items = [].concat(items)
+              })
+              .catch(error => {
+                console.error(error)
+              })
+          )
+        })
+      //Return List populated with ListItems when all promises ListItems are fetched
+      Promise.all(promises).then(() => {
+        res.status(200).json(lists)
+      })
+    })
+    .catch(error => {
+      console.error(error)
+    })
+})
+
+//Returns a lists details
 router.get('/:listId', (req, res, next) => {
   //Get ListId and validate it to exista and to be a number
   let { listId } = req.params || {}

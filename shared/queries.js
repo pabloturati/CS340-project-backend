@@ -79,27 +79,65 @@ const listQueries = {
       `INSERT INTO Lists(user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes) 
       VALUES ('${user_id}', '${genre_id}', '${name}', '${date_published}', '${number_of_likes}', '${number_of_dislikes}');`
     ),
-  getAllLists: () =>
-    runQuery(
-      `SELECT L.list_id, L.name, L.date_published, L.number_of_likes, L.number_of_dislikes, RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) 
-      AS 'owner_name' FROM Lists AS L INNER JOIN Users AS U ON L.user_id=U.user_id;`
-    ),
+  getAllLists: {
+    noOrder: `SELECT L.list_id, L.name AS list_name, L.date_published, L.number_of_likes, L.number_of_dislikes, 
+      RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) 
+      AS 'owner_name' FROM Lists AS L 
+      INNER JOIN Users AS U ON L.user_id=U.user_id;`,
+    byLikes: `SELECT L.list_id, L.name AS list_name, L.date_published, L.number_of_likes, L.number_of_dislikes, 
+      RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) AS 'owner_name' FROM Lists AS L 
+      INNER JOIN Users AS U ON L.user_id=U.user_id ORDER BY number_of_likes DESC;`,
+    byDates: `SELECT L.list_id, L.name AS list_name, L.date_published, L.number_of_likes, L.number_of_dislikes, 
+      RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) 
+      AS 'owner_name' FROM Lists AS L INNER JOIN Users AS U ON L.user_id=U.user_id ORDER BY L.date_published DESC;`
+  },
+  getUsersList: userId =>
+    runQuery(`SELECT L.list_id, L.name AS list_name, L.date_published, L.number_of_likes, L.number_of_dislikes, 
+  RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) AS 'owner_name' FROM Lists AS L 
+  INNER JOIN Users AS U ON L.user_id=U.user_id WHERE U.user_id=${userId};`),
   listItemsPerList: listId =>
     runQuery(
-      `SELECT LI.name, rating, image_link, imbd_link, release_date, plot, runtime FROM Lists AS L 
-    INNER JOIN ListItems LI ON L.list_id=LI.list_id WHERE LI.list_id=${listId}`
+      `SELECT LI.list_item_id, LI.name, rating, image_link, imbd_link, release_date, plot, runtime FROM Lists AS L INNER JOIN ListItems LI ON L.list_id=LI.list_id 
+      WHERE LI.list_id=${listId};
+      `
+    ),
+  genresPerListItem: listItemId =>
+    runQuery(
+      `  SELECT G.name FROM ListItems AS LI INNER JOIN listItems_genres AS LIG ON LIG.list_item_id = LI.list_item_id 
+      INNER JOIN Genres AS G ON G.genre_id=LIG.genre_id WHERE LI.list_item_id=${listItemId};
+      `
     ),
   listDetailsByListId: listId =>
     runQuery(
-      `SELECT L.name, L.date_published, L.number_of_likes, L.number_of_dislikes, RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) AS 'owner_name' 
-      FROM Lists AS L 
-      INNER JOIN Users AS U 
-      ON L.user_id=U.user_id WHERE L.list_id=${listId};
+      `SELECT L.name, L.date_published, L.number_of_likes, L.number_of_dislikes,
+      RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) AS 'owner_name' FROM Lists AS L 
+      INNER JOIN Users AS U ON L.user_id=U.user_id
+      WHERE L.list_id=${listId};
 
-      SELECT LI.list_item_id, LI.name, rating, image_link, imbd_link, release_date, plot, runtime FROM Lists AS L 
-      INNER JOIN ListItems LI ON L.list_id=LI.list_id WHERE LI.list_id=${listId};      
+      SELECT LI.list_item_id, LI.name, rating, image_link, imbd_link, release_date, plot, runtime 
+        FROM Lists AS L INNER JOIN ListItems LI 
+        ON L.list_id=LI.list_id WHERE LI.list_id=${listId};      
       `
     )
+}
+
+const genreQueries = {
+  allGenres: () =>
+    runQuery(`
+    SELECT G.name as genre_name, G.genre_id  FROM Genres as G ORDER BY G.genre_id;
+    `),
+  createNewGenre: newGenre =>
+    runQuery(`
+    INSERT INTO Genres(name) VALUES('${newGenre}');
+    `),
+  deleteGenre: genreId =>
+    runQuery(`
+    DELETE FROM Genres WHERE genre_id=${genreId};
+    `),
+  updateGenre: (genreId, newValue) =>
+    runQuery(`
+    UPDATE Genres SET name='${newValue}' WHERE genre_id=${genreId};
+    `)
 }
 
 const listItemQueries = {
@@ -130,5 +168,6 @@ module.exports = {
   authQueries,
   listQueries,
   listItemQueries,
-  validateDB
+  validateDB,
+  genreQueries
 }

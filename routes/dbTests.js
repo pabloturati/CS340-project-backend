@@ -9,7 +9,6 @@ router.get('/mysqltest', function(req, res, next) {
         next(err)
         return
       }
-      console.log(rows)
       res.send({ title: 'Test results', rows })
     }
   )

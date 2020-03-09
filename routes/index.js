@@ -7,8 +7,8 @@ var path = require('path')
 // Currently serves mock index apge
 
 router.get('/', (req, res, next) => {
-  res.sendFile(path.join(global.appRoot + '/public/indexTest.html')) //Comment for local development testing without React build
-  // res.sendFile(path.join(global.appRoot + '/public/index.html')) //Comment for using with React Build product
+  // res.sendFile(path.join(global.appRoot + '/public/indexTest.html')) //Comment for local development testing without React build
+  res.sendFile(path.join(global.appRoot + '/public/index.html')) //Comment for using with React Build product
 })
 
 module.exports = router

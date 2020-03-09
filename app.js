@@ -65,6 +65,7 @@ app.use(
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'hbs')
 app.use(express.static(path.join(__dirname, 'public')))
+
 app.use(cors())
 
 /* App routes */
@@ -74,11 +75,13 @@ const movieSearch = require('./routes/movieSearch')
 const auth = require('./routes/auth')
 const lists = require('./routes/lists')
 const dbTests = require('./routes/dbTests')
+const genres = require('./routes/genres')
 
 app.use('/', dbTests)
 app.use('/', movieSearch)
 app.use('/', auth)
 app.use('/lists', lists)
+app.use('/genres', genres)
 app.use('/', index)
 
 module.exports = app
