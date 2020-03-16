@@ -6,8 +6,10 @@ const {
   allGenres,
   createNewGenre,
   deleteGenre,
-  updateGenre
+  updateGenre,
+  genreFromListId
 } = queries.genreQueries
+
 router.get('/all', (req, res, next) => {
   allGenres()
     .then(genres => res.status(200).json(genres))
@@ -16,6 +18,21 @@ router.get('/all', (req, res, next) => {
       next()
       res.status(500).send(error)
     })
+})
+router.get('/by-list-id/:listId', (req, res, next) => {
+  const { listId } = req.params
+  try {
+    if (listId) {
+      genreFromListId(listId).then(genres => {
+        console.log(genres)
+        res.status(200).json(genres)
+      })
+    } else {
+      throw { message: 'No list id' }
+    }
+  } catch (e) {
+    res.status(400).json(e)
+  }
 })
 
 router.post('/', (req, res, next) => {

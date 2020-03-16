@@ -1,13 +1,21 @@
 const router = require('express').Router()
 const queries = require('../shared/queries')
 const runQuery = require('../shared/runQuery')
+const moment = require('moment')
+
+const { listQueries, genreQueries } = queries
 
 const {
   getAllLists,
   listItemsPerList,
   listDetailsByListId,
-  getUsersList
-} = queries.listQueries
+  getUsersList,
+  createListEntry,
+  createListGenreEntry,
+  updateListEntry
+} = listQueries
+
+const { deleteAllOfListGenres } = genreQueries
 
 //Sort options:  'none', 'date' by publish date DESC, 'likes' by number_of_likes 'descending'
 router.get('/all?:sort', (req, res, next) => {
@@ -48,7 +56,7 @@ router.get('/all?:sort', (req, res, next) => {
     })
 })
 
-// Returns user's lists
+// Returns all of the lists of an specific user
 router.get('/user?:id', (req, res, next) => {
   const { id } = req.query
   getUsersList(id)
@@ -106,6 +114,69 @@ router.get('/:listId', (req, res, next) => {
       })
   } else {
     res.status(400).json({ message: 'Bad param' })
+  }
+})
+
+router.post('/new', (req, res, next) => {
+  const { name: listName, genres = [], user_id: userId } = req.body || {}
+  try {
+    if (listName && genres.length > 0 && userId) {
+      const date = moment().format('MM-DD-YYYY')
+
+      createListEntry(userId, listName, date, 0, 0)
+        .then(results => {
+          const listId = results.insertId
+
+          const promises = []
+          genres.forEach(genre => {
+            promises.push(createListGenreEntry(listId, genre).then())
+          })
+          Promise.all(promises).then(() => {
+            res.status(200).json({ success: true, listId })
+          })
+        })
+        .catch(() => {
+          res
+            .status(500)
+            .json({ success: false, message: 'Ups. Our fault failed request' })
+        })
+    } else {
+      throw { message: 'Bad user input' }
+    }
+  } catch (e) {
+    res.status(400).json(e)
+  }
+})
+
+router.patch('/edit-list', (req, res, next) => {
+  const { name: listName, genres = [], listId } = req.body || {}
+  // try {
+  if (listName && genres.length > 0 && listId) {
+    const date = moment().format('MM-DD-YYYY')
+
+    updateListEntry(listId, listName, date)
+      .then(() => {
+        deleteAllOfListGenres(listId)
+          .then(() => {
+            const promises = []
+            genres.forEach(genre => {
+              promises.push(createListGenreEntry(listId, genre).then())
+            })
+            Promise.all(promises).then(() => {
+              res.status(200).json({ success: true, listId })
+            })
+          })
+          .catch(e => {
+            console.error(error)
+          })
+      })
+      .catch(() => {
+        res
+          .status(500)
+          .json({ success: false, message: 'Ups. Our fault failed request' })
+      })
+  } else {
+    res.status(400).send({ message: 'Could not process request' })
   }
 })
 

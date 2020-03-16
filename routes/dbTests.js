@@ -9,7 +9,7 @@ router.get('/mysqltest', function(req, res, next) {
         next(err)
         return
       }
-      res.send({ title: 'Test results', rows })
+      res.render('home', { results: JSON.stringify(rows[0]) })
     }
   )
 })

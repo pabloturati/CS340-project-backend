@@ -71,6 +71,8 @@ app.use(cors())
 /* App routes */
 // Index. Used to provide React app
 const index = require('./routes/index')
+
+// Index. Used to provide API data responses
 const movieSearch = require('./routes/movieSearch')
 const auth = require('./routes/auth')
 const lists = require('./routes/lists')

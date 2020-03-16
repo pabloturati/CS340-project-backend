@@ -29,24 +29,32 @@
   DELETE FROM Users WHERE user_id=:user_id_from_session_data;
 
 -- Lists
-  --createListEntr(user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes)
+  --createListEntry(user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes)
     -- Create new list entry
-    INSERT INTO Lists(user_id, genre_id, name, date_published, number_of_likes, number_of_dislikes) VALUES 
+    INSERT INTO Lists(user_id, name, date_published, number_of_likes, number_of_dislikes) VALUES 
       (
         :user_id, 
-        :genre_id_from_form_drop_down, 
         :name_from_form_input, 
-        :date_published_from_form_input, 
+        STR_TO_DATE(:date_published_from_form_input, '%m-%d-%Y'), 
         :number_of_likes_from_form_input, 
         :number_of_likes_from_form_input
+      );
+  
+  -- createListGenreEntry()
+    -- Create a new entry to the lists_genre table with the new list id
+    INSERT INTO lists_genres(list_id, genre_id)
+    VALUES
+      (
+        :list_id_from_creation_request, 
+        :genre_id_from_user_input_drop_down
       );
 
   -- getAllLists()
     -- Display all lists that belong to a specific user (by user_id)
-    SELECT L.list_id, L.name AS list_name, L.date_published, L.number_of_likes, L.number_of_dislikes, 
+    SELECT L.user_id, U.user_id, L.list_id, L.name AS list_name, L.date_published, L.number_of_likes, L.number_of_dislikes, 
       RTRIM(CONCAT(LTRIM(RTRIM(U.first_name)) , ' ' , LTRIM(RTRIM(U.last_name)))) 
       AS 'owner_name' FROM Lists AS L 
-      INNER JOIN Users AS U ON L.user_id=U.user_id;
+      INNER JOIN Users AS U ON L.user_id=U.user_id ORDER BY L.date_published DESC, L.list_id DESC, L.list_id DESC;
 
   -- listItemsPerList(listId)
     -- Display all ListItems per List  FILTER (all)
@@ -87,7 +95,7 @@
   UPDATE Lists SET
     name=:name_from_form,
     date_published=:date_published_from_form
-    WHERE list_id=:list_id_from_form
+    WHERE list_id=:list_id_from_form;
 
   -- For the user to delete a list (which the user must own, requires backend session validation for security)
   DELETE FROM Lists WHERE user_id=:user_id_from_session_data AND list_id=:list_id_from_delete_button;
@@ -155,6 +163,11 @@
   -- Note: Handle error for attempted duplicate entries since names must be unique
   INSERT INTO Genres(name) 
     VALUES(:name_from_input_in_form);
+
+  -- genreFromListId(listId)
+  SELECT G.genre_id FROM Genres AS G 
+      INNER JOIN lists_genres AS LG ON G.genre_id=LG.genre_id
+      INNER JOIN Lists AS L ON L.list_id=LG.list_id WHERE L.list_id=:listId;
 
   -- Update Genre names.  Handle error for attempted duplicate entries since names must be unique
   UPDATE Genres
